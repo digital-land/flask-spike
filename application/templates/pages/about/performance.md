@@ -49,6 +49,44 @@ Datasets compiled from LPA sources:
 * 5% coverage of Tree preservation zone. No change from last month.
 * 4% coverage of Tree. No change from last month.
 
-<!-- ## Usage
+## Usage
 
-0.00 average daily calls. +/-0% change from last month. -->
+5,000 average daily API queries.
+
+<div class="govuk-width-container">
+  <main class="govuk-main-wrapper">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-xl">Map of data subjects</h1>
+        <p class="govuk-body">This map shows the places where data is supporting planning decisions.</p>
+        <img src="https://raw.githubusercontent.com/digital-land/lightning-map/refs/heads/main/lightning.svg">
+      </div>
+      <div class="govuk-grid-column-one-third">
+        <h2 class="govuk-heading-m">Popular locations</h2>
+        <table class="govuk-table">
+            <caption class="govuk-table__caption govuk-table__caption--m">Most popular locations, last 7 days</caption>
+            <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Location</th>
+                <th scope="col" class="govuk-table__header">Queries</th>
+                </tr>
+            </thead>
+            <tbody class="govuk-table__body">
+                <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Canterbury</th>
+                <td class="govuk-table__cell">3,501</td>
+                </tr>
+                <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Buckinghamshire</th>
+                <td class="govuk-table__cell">1,523</td>
+                </tr>
+                <tr class="govuk-table__row">
+                <th scope="row" class="govuk-table__header">Camden</th>
+                <td class="govuk-table__cell">999</td>
+                </tr>
+            </tbody>
+            </table>
+      </div>
+    </div>
+  </main>
+</div>
