@@ -81,6 +81,10 @@ Example: `1480524`
 
 The Historic England listed-building-grade value for the listed building: I, II or II*.
 
+### document-url
+
+An optional URL of a document providing the authoritative source of the boundary. For example, a PDF containing a map of the area, indicated with a red-line boundary.
+
 ### notes
 
 Optional text on how this data was made or produced, or how it can be interpreted.

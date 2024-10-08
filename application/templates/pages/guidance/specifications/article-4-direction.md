@@ -185,6 +185,10 @@ Only use rights from our [permitted development right dataset](https://www.plann
 
 Example: `3D;3M;11B`
 
+### documentation-url
+
+An optional URL of a document providing the authoritative source of the boundary. For example, a PDF containing a map of the area, indicated with a red-line boundary.
+
 ### notes
 
 Optional text on how this data was made or produced, or how it can be interpreted.
