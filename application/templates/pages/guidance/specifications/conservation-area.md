@@ -1,4 +1,4 @@
-**Last updated: 19 November 2024**<br/>
+**Last updated: 16 January 2025**<br/>
 
 ---
 
@@ -100,13 +100,13 @@ This means each section of your page should have its own URL. Most publishing sy
 Examples:
 
 One conservation area per page:
-`http://www.LPAwebsite.org.uk/data/conservationareas/smithroad`
+`http://www.LPAwebsite.org.uk/conservationareas/smithroad`
 
 More than one conservation area per page with an anchor link for each one:
 
-`http://www.LPAwebsite.org.uk/data/conservationareas#smithroad`
+`http://www.LPAwebsite.org.uk/conservationareas#smithroad`
 
-`http://www.LPAwebsite.org.uk/data/conservationareas#broadhousepark`
+`http://www.LPAwebsite.org.uk/conservationareas#broadhousepark`
 
 
 ![An image showing what to put as the document-url and the documentation-url](https://digital-land.github.io/images/diagrams/document-documentation-url.png)
@@ -117,7 +117,7 @@ Optional text on how this data was made or produced, or how it can be interprete
 
 ### entry-date
 
-The date the entity was last updated.
+The date the record was last updated.
 
 If the entity has never been updated, enter the same date as start-date.
 
