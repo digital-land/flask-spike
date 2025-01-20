@@ -8,6 +8,17 @@
 {%- from "components/entity-field/macro.jinja" import entityField %}
 {%- from "components/back-button/macro.jinja" import dlBackButton %}
 
+{% set is_truncated = false %}
+{% if row['geometry'] %}
+  {% if row['geometry']|length > 100000 %}
+    {% set is_truncated = true %}
+  {% endif %}
+{% endif %}
+
+
+
+
+
 {% if row['name'] %}
   {%- set row_name = row['name'] %}
 {%- elif row['reference'] %}
@@ -17,6 +28,7 @@
 {%- endif %}
 
 {% set geometry_url = "/entity/" + row["entity"] | string + ".geojson" if row['typology'] == "geography" else None %}
+{% set geometry_json_url = "/entity/" + row["entity"] | string + ".json" if row['typology'] == "geography" else None %}
 {% set geojson_data = entity %}
 
 {% if geometry_url or geojson_features %}
@@ -71,19 +83,30 @@
           </thead>
           <tbody class="govuk-table__body">
             {% for field in row.keys() %}
-              {% if field != 'entity' %}
-                {%- if field not in ["geometry","point","organisation-entity","json"] or row[field] is not none  %}
-                  <tr class="govuk-table__row">
-                    <th scope="row" class="app-table__header app-table__header--row">
-                      {{ entityField(field,fields,dataset_fields) }}
-                    </th>
-                    <td class="govuk-table__cell app-table__cell">
-                      {{ entityValue(field,row[field],fields,dataset_fields,organisation_entity,linked_entities)}}
-                    </td>
-                    {% if field is not in['dataset','organisation-entity','start-date','end-date','typology'] %}
-                      <td class="govuk-table__cell govuk-!-font-size-14 govuk-!-text-align-right">
-                        <a href="/fact?dataset={{row['dataset']}}&entity={{row['entity']}}&field={{field}}" class="govuk-link">Facts</a>
-                      </td>
+              {% if field != 'entity'%}
+              {%- if field not in ["geometry","point","organisation-entity","json"] or row[field] is not none  %}
+              <tr class="govuk-table__row">
+                <th scope="row" class="app-table__header app-table__header--row">
+                  {{ entityField(field, fields, dataset_fields) }}
+                </th>
+                <td class="govuk-table__cell app-table__cell">
+                  {% if field == 'geometry' %}
+                    <code class ="app-code-block" id="geometry-content">
+                      {% if row[field] is not none %}
+                        {{ row[field][:100000] }}{% if row[field]|length > 100000 %}... <a href="javascript:void(0);" onclick="expandGeometry()">Load More</a>{% endif %}
+                      {% endif %}
+                      </code>
+                    <code class ="app-code-block" id="geometry-full-content" style="display: none;">
+                      {{ row[field] }}
+                    </code>
+                  {% else %}
+                    {{ entityValue(field, row[field], fields, dataset_fields, organisation_entity, linked_entities) }}
+                  {% endif %}
+                </td>
+                {% if field not in ['dataset', 'organisation-entity', 'start-date', 'end-date', 'typology'] %}
+                  <td class="govuk-table__cell govuk-!-font-size-14 govuk-!-text-align-right">
+                    <a href="/fact?dataset={{ row['dataset'] }}&entity={{ row['entity'] }}&field={{ field }}" class="govuk-link">Facts</a>
+                  </td>
                     {% else %}
                       <td class="govuk-table__cell govuk-!-font-size-14 govuk-!-text-align-right"><span class='govuk-visually-hidden'>no fact link</span></td>
                     {% endif %}
@@ -92,11 +115,41 @@
               {% endif %}
             {% endfor %}
           </tbody>
+          <script>
+            function expandGeometry() {
+              document.getElementById('geometry-content').style.display = 'none';
+              document.getElementById('geometry-full-content').style.display = 'block';
+            }
+          </script>
+
         </table>
       {% endcall %}
 
+      {% set data_to_send = {
+        'row': row,
+        'is_truncated': is_truncated
+      } %}
       {% set jsonHTML %}
-        <pre class="govuk-!-margin-0"><code class="language-json app-code-block app-code-block-overflow" tabindex="0">{{row|digital_land_to_json}}</code></pre>
+      {% if is_truncated %}
+      <div class="govuk-inset-text" style="font-size: 15px; margin-top: -10px;">
+       The geometry is too large to be included in the JSON below. Download JSON for the full geometry.
+       </div>
+      <a href="{{geometry_json_url}}"
+      id = "download-json-button"
+      class="govuk-button"
+      style="margin-bottom: 10px; margin-top: -10px;"
+      download>
+      <span id="download-text">Download JSON</span>
+      <div id="spinner" style="display: none;">
+        <div class="dl-map__spinning-loader" style="width: 10px; height: 10px;margin-top: -25px "></div>
+     </div>
+    </a>
+
+        <pre class="govuk-!-margin-0"><code class="language-json app-code-block app-code-block-overflow" tabindex="0">{{ data_to_send | digital_land_to_json | safe }}
+        </code></pre>
+      {% else %}
+      <pre class="govuk-!-margin-0"><code class="language-json app-code-block app-code-block-overflow" tabindex="0">{{ data_to_send | digital_land_to_json | safe }}</code></pre>
+      {% endif %}
       {% endset %}
       {% set geojsonHTML %}
         <pre class="govuk-!-margin-0"><code class="language-json app-code-block app-code-block-overflow" id="geojson-content" tabindex="0">Loading...</code></pre>
@@ -340,6 +393,8 @@
 
 {%- block pageScripts %}
 
+
+
 <script>
   document.addEventListener('DOMContentLoaded', function () {
       // Function to handle loading GeoJSON content
@@ -354,7 +409,70 @@
                   })
                   .catch(error => {
                       console.error('Error loading GeoJSON:', error);
-                      geojsonContentElement.innerHTML = 'Error loading GeoJSON content';
+                      geojsonContentElement.innerHTML = '<b>Too large to display. Download GeoJSON instead.</b ';
+                      // Create and append the download button
+                      const downloadButton = document.createElement('a');
+                      downloadButton.href = '{{ geometry_url }}';
+                      downloadButton.className = 'govuk-button';
+                      downloadButton.style.marginTop = '10px';
+                      downloadButton.style.marginBottom = '10px';
+                      downloadButton.textContent = 'Download GeoJSON';
+                      downloadButton.setAttribute('id','download-geojson-button')
+                      downloadButton.setAttribute('download', '{{ row["entity"] }}.geojson');
+                      geojsonContentElement.parentElement.appendChild(downloadButton);
+
+                      const spinnerDiv = document.createElement('div');
+                      spinnerDiv.id = 'spinner1';
+                      spinnerDiv.style.display = 'none'; // Hide the spinner initially
+
+                      // Create the spinner loader
+                      const spinnerLoader = document.createElement('div');
+                      spinnerLoader.className = 'dl-map__spinning-loader';
+                      spinnerLoader.style.width = '10px';
+                      spinnerLoader.style.height = '10px';
+                      spinnerLoader.style.marginTop = '-25px';
+
+                      // Append the spinner loader inside the spinner div
+                      spinnerDiv.appendChild(spinnerLoader);
+
+                      // Append the spinner div to the geojsonContentElement
+                      downloadButton.appendChild(spinnerDiv);
+
+                      downloadButton.addEventListener('click', async function(event) {
+                          console.info("hello")
+                          event.preventDefault();
+
+                          // Show the spinner and disable the download button
+                          spinnerDiv.style.display = 'block';
+                          downloadButton.disabled = true;
+
+                          try {
+                              // Simulate downloading the GeoJSON (you can replace this with the actual download logic)
+                              const response = await fetch('{{ geometry_url }}');
+                              if (!response.ok) {
+                                  throw new Error('Failed to fetch the file');
+                              }
+                              const blob = await response.blob();
+
+                              // Create a Blob URL and trigger the download
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = '{{ row["entity"] }}.geojson'; // Set the file name
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+
+                              // Clean up the Blob URL
+                              URL.revokeObjectURL(url);
+                          } catch (error) {
+                              console.error('Error during download:', error);
+                          } finally {
+                              // Hide the spinner and enable the download button after download
+                              spinnerDiv.style.display = 'none';
+                              downloadButton.disabled = false;
+                          }
+                      });
                   });
           }
       }
@@ -369,6 +487,46 @@
           // Simulate a click event on the GeoJSON tab
           document.querySelector('#tab_geojson').click();
       }
+  });
+
+  document.getElementById('download-json-button').addEventListener('click', async function (event) {
+    event.preventDefault();
+    const downloadButton = document.getElementById("download-json-button");
+    //const downloadText = document.getElementById("download-text");
+    const spinner = document.getElementById("spinner");
+
+    // Show spinner and disable button
+    downloadButton.disabled = true;
+    spinner.style.display = "block";
+    //downloadText.style.display = "none";
+
+    try {
+      // Fetch the file content
+      const response = await fetch("{{geometry_json_url}}");
+      if (!response.ok) {
+        throw new Error("Failed to fetch the file");
+      }
+      const blob = await response.blob();
+      // Create a Blob URL and trigger the download
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "{{ row['entity'] }}.json";
+      document.body.appendChild(a);
+
+      a.click();
+      document.body.removeChild(a);
+
+      // Clean up the Blob URL
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error during download:", error);
+    } finally {
+      // Restore button and hide spinner
+      downloadButton.disabled = false;
+      spinner.style.display = "none";
+      //downloadText.style.display = "inline";
+    }
   });
 </script>
 {%- endblock %}

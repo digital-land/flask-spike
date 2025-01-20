@@ -81,7 +81,7 @@ jobs:
           echo "## Accessibility Tests" >> $GITHUB_STEP_SUMMARY
           cat accessibility-tests.md >> $GITHUB_STEP_SUMMARY
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: playwright-report

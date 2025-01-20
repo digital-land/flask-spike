@@ -166,7 +166,18 @@ def get_entity_name(entity):
 
 
 def digital_land_to_json(dict):
-    return json.dumps(dict, default=str, indent=4, cls=NoneToEmptyStringEncoder)
+    filtered_dict = dict.get("row", {})
+    is_truncated = dict.get("is_truncated", False)
+    if is_truncated:
+        # Replace geometry with a placeholder message if truncated
+        if "geometry" in filtered_dict:
+            filtered_dict[
+                "geometry"
+            ] = "<b>Too large to display. Download JSON for full geometry.</b>"
+    # dict["geometry"] = dict["geometry"][:1000]
+    return json.dumps(
+        filtered_dict, default=str, indent=4, cls=NoneToEmptyStringEncoder
+    )
 
 
 def uri_encode(uri_template, kwarg_list):
